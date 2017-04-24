@@ -1,0 +1,24 @@
+import os
+
+
+DEBUG = True
+DEFAULT_LIMIT = 10
+DEFAULT_OFFSET = 0
+FROM_EMAIL = 'YOUR@EMAIL.COM'
+MAX_EMAIL_ADDRESS_SIZE = 256
+MAX_RETRIES = 3
+MAX_SUBJECT_SIZE = 256
+MAX_TEXT_SIZE = 4096
+POSTGRESQL_HOST = 'localhost'
+RETRY_DELAY_MS = 10 * 60 * 1000  # 10 min in milliseconds
+RABBITMQ_HOST = 'localhost'
+SMTP_HOST = 'localhost'
+SMTP_PASSWORD = os.environ['SMTP_PASSWORD']
+SMTP_PORT = 465
+SMTP_TLS_ENABLED = True
+SMTP_USER = 'YOUR_SMTP_USER'
+SQLALCHEMY_DATABASE_URI = \
+    'postgresql+psycopg2://mailbbgun:{}@{}/mailbbgun'.format(
+        os.environ['PG_PASSWORD'], POSTGRESQL_HOST
+    )
+SQLALCHEMY_TRACK_MODIFICATIONS = False
