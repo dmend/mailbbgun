@@ -34,9 +34,21 @@ def new_message():
     )
     channel = connection.channel()
     channel.queue_declare(queue='mailbbgun', durable=True)
-    channel.basic_publish(
+    channel.queue_bind(exchange='amq.direct', queue='mailbbgun')
+
+    work_delay = connection.channel()
+    work_delay.queue_declare(
+        queue='work_delay',
+        durable=True,
+        arguments={
+            'x-message-ttl': 5000,  # 5 sec delay before sending to worker
+            'x-dead-letter-exchange': 'amq.direct',
+            'x-dead-letter-routing-key': 'mailbbgun'
+        }
+    )
+    work_delay.basic_publish(
         exchange='',
-        routing_key='mailbbgun',
+        routing_key='work_delay',
         body=str(message.id),
         properties=pika.BasicProperties(
             delivery_mode=_DELIVERY_MODE_PERSISTENT
