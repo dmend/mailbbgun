@@ -8,7 +8,6 @@ Requirements
 
 * Python 3.6
 * Docker
-* SMTP Server account
 
 Setup
 -----
@@ -32,13 +31,7 @@ Generate the database password.  Be sure to save it in a safe place.
     export PG_PASSWORD=$(dd if=/dev/urandom bs=1 count=24 2>/dev/null | hexdump -v -e '/1 "%02X"')
     echo $PG_PASSWORD
 
-Export your SMTP password.
-
-.. code-block:: bash
-
-    export SMTP_PASSWORD=YOUR_SMTP_PASSWORD
-
-Copy the sample config file and update it with relevant SMTP account values for your deployment.
+Copy the sample config file and update it with relevant values for your deployment.
 
 .. code-block:: bash
 
@@ -78,7 +71,8 @@ Architecture
 Mail BB Gun consists of two processes:
 
 * **api.py** - Flask based RESTful API that accepts message requests.
-* **worker.py** - Worker process that sends the messages using an external SMTP server.
+* **worker.py** - Worker process that sends the messages directly to the recipient's
+  SMTP server.
 
 All message requests are saved to a PostgreSQL database indefinitely, although
 it would be trivial to enforce a shorter retention policy.  We could, for
@@ -92,7 +86,7 @@ back on the work queue.
 There are some known limitations for the service:
 
 * There are no access controls for the API.
-* All email originates from a single SMTP account.
+* All email originates from a single email account.
 * Email is sent in plain text only.
 * Email is limited to a single recipient.
 * It is possible that a message may be lost if something horrible happens to

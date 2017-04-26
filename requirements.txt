@@ -1,3 +1,4 @@
+dnspython
 Flask
 Flask-SQLAlchemy
 jsonschema

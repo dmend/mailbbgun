@@ -1,7 +1,9 @@
 from email.mime import text
 import logging
-import pika
 import smtplib
+
+from dns import resolver
+import pika
 from sqlalchemy.orm import exc
 
 from mailbbgun import app
@@ -73,7 +75,8 @@ class MailBBGunWorker():
                 _LOG.warning(
                     "Failed to deliver message id {}.  Retrying.".format(
                         message_id
-                    )
+                    ),
+                    exc_info=True
                 )
                 self._increment_message_retries(message)
                 self._schedule_retry(message_id)
@@ -93,18 +96,19 @@ class MailBBGunWorker():
         ).one()
 
     def _send_email(self, email):
-        # Enable SMTP TLS
-        if app.config['SMTP_TLS_ENABLED']:
-            SMTP = smtplib.SMTP_SSL
-        else:
-            SMTP = smtplib.SMTP
-        with SMTP(host=app.config['SMTP_HOST'],
-                  port=app.config['SMTP_PORT']) as smtp:
+        host = self._lookup_mx_host(email['To'])
+        with smtplib.SMTP(host=host) as smtp:
             smtp.ehlo()
-            smtp.login(app.config['SMTP_USER'],
-                       app.config['SMTP_PASSWORD'])
             smtp.send_message(email, from_addr=email['From'],
                               to_addrs=email['To'])
+
+    def _lookup_mx_host(self, address):
+        domain = address.split('@')[-1]
+        hosts = [(r.to_text()).split(' ') for r in resolver.query(
+            domain, 'MX'
+        )]
+        preferred_host = sorted(hosts, key=(lambda x: int(x[0])))[0][1]
+        return preferred_host
 
     def _update_message_status(self, message, status):
         message.status = status
