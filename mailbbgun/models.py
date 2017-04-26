@@ -1,9 +1,10 @@
 from datetime import datetime
 import enum
-import flask_sqlalchemy as sqlalchemy
 import json
-from sqlalchemy.dialects import postgresql as pg
 import uuid
+
+import flask_sqlalchemy as sqlalchemy
+from sqlalchemy.dialects import postgresql as pg
 
 from mailbbgun import app
 
