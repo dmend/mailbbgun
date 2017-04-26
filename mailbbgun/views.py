@@ -22,7 +22,6 @@ def new_message():
 
     message = models.Message(**data)
     models.db.session.add(message)
-    models.db.session.commit()
 
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(app.config['RABBITMQ_HOST'])
@@ -43,6 +42,7 @@ def new_message():
     response.headers['Location'] = '{}/messages/{}'.format(
         flask.request.host_url.rstrip('/'), message.id
     )
+    models.db.session.commit()
     return response, 201
 
 
