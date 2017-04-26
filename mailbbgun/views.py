@@ -15,6 +15,12 @@ _DELIVERY_MODE_PERSISTENT = 2
 _LOG = logging.getLogger(__name__)
 
 
+class BadRequestException(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
 @app.route('/messages', methods=['POST'])
 def new_message():
     data = _validate_message_request()
@@ -51,9 +57,9 @@ def list_messages():
     limit = flask.request.args.get('limit', app.config['DEFAULT_LIMIT'])
     offset = flask.request.args.get('offset', app.config['DEFAULT_OFFSET'])
     if int(offset) < 0:
-        flask.abort(400)
+        raise BadRequestException("Invalid offset")
     if int(limit) < 0:
-        flask.abort(400)
+        raise BadRequestException("Invalid limit")
     messages = models.Message.query.order_by(
         models.Message.created.desc()
     ).limit(limit).offset(offset).all()
@@ -82,7 +88,7 @@ def _validate_message_request():
         flask.abort(415)
     data = flask.request.get_json()
     if not data:
-        flask.abort(400)
+        raise BadRequestException("Missing request data")
     schema = {
         "type": "object",
         "properties": {
@@ -101,8 +107,19 @@ def _validate_message_request():
             format_checker=jsonschema.FormatChecker()
         )
     except jsonschema.ValidationError:
-        flask.abort(400)
+        raise BadRequestException("Invalid JSON.  Check required properties.")
     return data
+
+
+@app.errorhandler(BadRequestException)
+def bad_request(e):
+    response = {
+        "error": {
+            "status": 400,
+            "message": e.message
+        }
+    }
+    return flask.jsonify(response), 400
 
 
 @app.errorhandler(400)
