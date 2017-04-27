@@ -1,0 +1,7 @@
+dnspython
+Flask
+Flask-SQLAlchemy
+jsonschema
+pika
+psycopg2
+SQLAlchemy

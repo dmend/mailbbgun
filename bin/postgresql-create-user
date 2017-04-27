@@ -1,0 +1,14 @@
+#! /usr/bin/env bash
+
+docker exec -u postgres mailbbgun_postgresql_1 psql --command "DO
+\$body\$
+BEGIN
+  IF NOT EXISTS (SELECT * FROM pg_catalog.pg_user WHERE usename = 'mailbbgun') THEN
+    CREATE USER mailbbgun WITH SUPERUSER PASSWORD '$PG_PASSWORD';
+  END IF;
+END
+\$body\$;"
+
+docker exec -u postgres mailbbgun_postgresql_1 createdb -O mailbbgun mailbbgun
+
+echo "mailbbgun user created."

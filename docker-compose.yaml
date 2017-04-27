@@ -1,0 +1,10 @@
+version: '2'
+services:
+  postgresql:
+    build: docker/postgresql
+    ports:
+      - "5432:5432"
+  rabbitmq:
+    build: docker/rabbitmq
+    ports:
+      - "5672:5672"
